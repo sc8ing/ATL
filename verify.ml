@@ -1,7 +1,9 @@
+open Lang
+
 let verify premises conclusion =
-  Some [ Judgement.t { statement = List.nth premises 0
-                     ; refs = premises
-                     ; rule = PO }
+  Some [ Judgement { statement = conclusion
+                   ; refs = premises
+                   ; rule = PO }
        ]
 
 

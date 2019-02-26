@@ -1,1 +1,1 @@
-val parse : Token.t list -> Statement.t list * Statement.t
+val parse : Token.t list -> Lang.statement list * Lang.statement

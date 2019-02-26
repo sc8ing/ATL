@@ -8,7 +8,6 @@ type t =
 
 let toString token = 
   match token with
-  | [] -> ""
   | LPar -> "("
   | RPar -> ")"
   | Plus -> "+"

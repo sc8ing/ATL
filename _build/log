@@ -1,0 +1,41 @@
+# dune build repl.exe
+# OCAMLPARAM: unset
+$ /usr/bin/getconf _NPROCESSORS_ONLN > /var/folders/f5/mykwsxqx7nb0n30p4z96kgqw0000gn/T/dune61d876.output 2> /dev/null
+$ /usr/local/bin/ocamlc.opt -config > /var/folders/f5/mykwsxqx7nb0n30p4z96kgqw0000gn/T/duneb1a337.output
+$ (cd _build/default && /usr/local/bin/ocamldep.opt -modules -impl tokenizer.ml) > _build/default/.repl.eobjs/tokenizer.ml.d
+$ (cd _build/default && /usr/local/bin/ocamlopt.opt -w @a-4-29-40-41-42-44-45-48-58-59-60-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I .repl.eobjs/byte -I .repl.eobjs/native -intf-suffix .ml -no-alias-deps -opaque -o .repl.eobjs/native/derivation.cmx -c -impl derivation.ml)
+> File "derivation.ml", line 8, characters 16-25:
+> Error: Unbound type constructor statement
+[2]
+$ (cd _build/default && /usr/local/bin/ocamlopt.opt -w @a-4-29-40-41-42-44-45-48-58-59-60-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I .repl.eobjs/byte -I .repl.eobjs/native -intf-suffix .ml -no-alias-deps -opaque -o .repl.eobjs/native/parser.cmx -c -impl parser.ml)
+> File "parser.ml", line 2, characters 41-45:
+> Error: Unbound type constructor term
+[2]
+$ (cd _build/default && /usr/local/bin/ocamlopt.opt -w @a-4-29-40-41-42-44-45-48-58-59-60-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I .repl.eobjs/byte -I .repl.eobjs/native -intf-suffix .ml -no-alias-deps -opaque -o .repl.eobjs/native/token.cmx -c -impl token.ml)
+> File "token.ml", line 12, characters 4-8:
+> Error: This variant pattern is expected to have type 'a list
+>        The constructor LPar does not belong to type list
+[2]
+$ (cd _build/default && /usr/local/bin/ocamlopt.opt -w @a-4-29-40-41-42-44-45-48-58-59-60-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I .repl.eobjs/byte -I .repl.eobjs/native -intf-suffix .ml -no-alias-deps -opaque -o .repl.eobjs/native/tokenizer.cmx -c -impl tokenizer.ml)
+> File "tokenizer.ml", line 1, characters 0-4:
+> Error: Unbound constructor Open
+[2]
+$ (cd _build/default && /usr/local/bin/ocamlopt.opt -w @a-4-29-40-41-42-44-45-48-58-59-60-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I .repl.eobjs/byte -I .repl.eobjs/native -intf-suffix .ml -no-alias-deps -opaque -o .repl.eobjs/native/statement.cmx -c -impl statement.ml)
+> File "statement.ml", line 7, characters 13-428:
+> Error (warning 8): this pattern-matching is not exhaustive.
+> Here is an example of a case that is not matched:
+> Neg _
+> File "statement.ml", line 1:
+> Error: The implementation statement.ml
+>        does not match the interface .repl.eobjs/byte/statement.cmi:
+>        Values do not match:
+>          val toStrings : string list -> string
+>        is not included in
+>          val toStrings : t list -> string
+>        File "statement.mli", line 9, characters 0-32: Expected declaration
+>        File "statement.ml", line 20, characters 4-13: Actual declaration
+[2]
+$ (cd _build/default && /usr/local/bin/ocamlopt.opt -w @a-4-29-40-41-42-44-45-48-58-59-60-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I .repl.eobjs/byte -I .repl.eobjs/native -intf-suffix .ml -no-alias-deps -opaque -o .repl.eobjs/native/verify.cmx -c -impl verify.ml)
+> File "verify.ml", line 2, characters 9-20:
+> Error: Unbound module Judgement
+[2]

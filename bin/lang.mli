@@ -1,9 +1,11 @@
 type rule = 
+  | Premise
   | PO
   | SO
   | Converse
   | Contrap
 val string_of_rule : rule -> string
+val rules : rule list
 
 type term = Term of char | Neg of term
 val string_of_term : term -> string

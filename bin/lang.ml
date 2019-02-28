@@ -1,13 +1,16 @@
 type rule = 
+  | Premise
   | PO
   | SO
   | Converse
   | Contrap
 let string_of_rule = function
+  | Premise -> "premise"
   | PO -> "PO"
   | SO -> "SO"
   | Converse -> "conversion"
   | Contrap -> "contraposition"
+let rules = [PO; SO; Converse; Contrap]
 
 type term = Term of char | Neg of term
 let rec string_of_term = function

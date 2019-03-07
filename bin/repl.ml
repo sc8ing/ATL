@@ -12,7 +12,7 @@ let rec repl () =
   let valid =
     match valid with
     | None -> "not valid"
-    | Some derivation -> Lang.string_of_derivation derivation
+    | Some judgement -> Lang.string_of_judgement judgement
   in
   let premises = List.map Lang.string_of_statement premises in
   let premises = List.fold_left (fun acc s -> acc ^ s ^ "\n") "" premises in

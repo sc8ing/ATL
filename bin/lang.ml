@@ -10,7 +10,6 @@ let string_of_rule = function
   | SO -> "SO"
   | Converse -> "conversion"
   | Contrap -> "contraposition"
-let rules = [PO; SO; Converse; Contrap]
 
 type term = Term of char | Neg of term
 let rec string_of_term = function
@@ -29,17 +28,16 @@ let rec string_of_statement = function
   | Statement { sub; pred } -> (string_of_subPred sub) ^ (string_of_subPred pred)
   | Neg statement -> (Token.toString Token.Minus) ^ string_of_statement statement
 
-type judgement = Judgement of { statement : statement
-                              ; refs : statement list
-                              ; rule : rule }
-let string_of_judgement (Judgement { statement
-                        ; refs
-                        ; rule }) =
+type judgement = { statement : statement
+                 ; refs : judgement list
+                 ; rule : rule }
+let rec string_of_judgement { statement; refs; rule } =
+  let refs =
+    if rule = Premise then ""
+    else List.fold_left (fun acc s -> acc ^ (string_of_judgement s) ^ ",") "" refs
+  in
   let statement = string_of_statement statement in
-  let refs = List.fold_left (fun acc s -> acc ^ (string_of_statement s) ^ ",") "" refs in
   let rule = string_of_rule rule in
   Printf.sprintf "%s\t(%s %s)" statement refs rule
-
-type derivation = judgement list
-let string_of_derivation derivation =
-  List.fold_left (fun acc s -> acc ^ (string_of_judgement s) ^ "\n") "" derivation
+let string_of_judgements judgements =
+  List.fold_left (fun acc s -> acc ^ (string_of_judgement s) ^ "\n") "" judgements

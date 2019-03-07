@@ -1,5 +1,27 @@
 open Lang
 
+let removeOptions optionals =
+  let somesOnly = List.filter (fun x -> x = None) optionals in
+  List.map (function Some x -> x | _ -> failwith "error") somesOnly
+
+(* stolen from https://stackoverflow.com/questions/3969321/lazy-n-choose-k-in-ocaml *)
+let rec choose k l =
+  if k = 0  then [ [] ]
+  else
+    let len = List.length l in
+    if len < k then []
+    else if k = len then [ l ]
+    else
+      match l with
+      | [] -> assert false
+      | h :: t ->
+          let starting_with_h = List.map (fun sublist -> h :: sublist) (choose (pred k) t) in
+          let not_starting_with_h = choose k t in
+          starting_with_h @ not_starting_with_h
+
+
+
+
 (* verify:
  *  if conclusion is in judgements, return judgement
  *  else
@@ -9,6 +31,20 @@ open Lang
  *)
 let verify premises conclusion =
   let rec verify judgements conclusion =
+    let judEqualsConc = function Judgement { statement = s; refs; rule} -> s = conclusion in
+    let answer = List.filter judEqualsConc judgements in
+    if List.length answer != 0 then Some (List.nth answer 0)
+    else
+      let unOpRules = [ PO; SO; Converse; Contrap ] in
+      let applySingle rule jud = Logic.apply rule [jud] in
+      let judsFromUnOps = List.map2 applySingle unOpRules judgements in
+      let judsFromUnOps = removeOptions judsFromUnOps in
+      (* DDO/RAA and other binop rules not yet included---
+      let binOpRules = [ DDO ] in
+      let judPairs = choose 2 judgements in
+      let judsFromBinOps = List.map2 (fun rule juds -> appToJuds rule juds) binOpRules judPairs in
+      judsFromUnOps @ judsFromBinOps *)
+      verify judsFromUnOps conclusion
   in
   let jFromP p = Judgement { statement = p
                            ; refs = []
@@ -16,3 +52,5 @@ let verify premises conclusion =
   in
   let premJudgements = List.map jFromP premises in
   verify premJudgements conclusion
+
+

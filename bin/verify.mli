@@ -1,1 +1,1 @@
-val verify : Lang.statement list -> Lang.statement -> Lang.derivation option
+val verify : Lang.statement list -> Lang.statement -> Lang.judgement option

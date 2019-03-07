@@ -7,13 +7,13 @@ let rec term (tokens : Token.t list) : Lang.term * Token.t list =
   | LPar :: tokens ->
     let (innerT, tokens) = term tokens in
     (match tokens with
-     | RPar :: [] -> (innerT, tokens)
-     | _ -> failwith "missing closing ')' or there are extra characters")
+     | RPar :: tokens -> (innerT, tokens)
+     | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
   | Minus :: tokens ->
     let (innerT, tokens) = term tokens in
     (match tokens with
-     | RPar :: [] -> (Neg innerT, tokens)
-     | _ -> failwith "missing closing ')' or there are extra characters")
+     | RPar :: tokens -> (Neg innerT, tokens)
+     | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
   | _ -> failwith "invalid term form"
 
 let subPred (tokens : Token.t list) : Lang.subPred * Token.t list =
@@ -31,13 +31,13 @@ let rec statement tokens =
   | LPar :: tokens ->
     let (innerS, tokens) = statement tokens in
     (match tokens with
-     | RPar :: [] -> (innerS, tokens)
-     | _ -> failwith "missing closing ')' or there are extra characters")
+     | RPar :: tokens -> (Printf.printf "Parser: statement: %s" (Lang.string_of_statement innerS)) ; (innerS, tokens)
+     | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
   | Minus :: LPar :: tokens ->
     let (innerS, tokens) = statement tokens in
     (match tokens with
-     | RPar :: [] -> (Neg innerS, tokens)
-     | _ -> failwith "missing closing ')' or there are extra characters")
+     | RPar :: tokens -> (Neg innerS, tokens)
+     | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
   | Plus :: _ | Minus :: _ ->
     let (sub, tokens) = subPred tokens in
     let (pred, tokens) = subPred tokens in

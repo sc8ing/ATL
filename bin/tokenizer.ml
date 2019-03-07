@@ -39,6 +39,7 @@ let tokenize s =
         if isUpperCaseChar c then loop (Term c :: tokens) chars
         else failwith (Printf.sprintf "invalid character %c" c)
     in
-    List.rev (loop [] chars)
+    let ans = List.rev (loop [] chars) in
+    Printf.printf "Tokens: %s\n" (Token.toStrings ans) ; ans
   in
   tokenize (explode s)

@@ -1,1 +1,1 @@
-val apply : Lang.rule -> Lang.judgement list -> Lang.judgement option
+val applyIfEquivalent : Lang.rule -> Lang.judgement list -> Lang.judgement option

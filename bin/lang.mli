@@ -4,10 +4,12 @@ type rule =
   | SO
   | Converse
   | Contrap
+  | DDO
 val string_of_rule : rule -> string
 
 type term = Term of char | Neg of term
 val string_of_term : term -> string
+val terms_equal : term -> term -> bool
 
 type subPred = Plus of term | Minus of term
 val string_of_subPred : subPred -> string

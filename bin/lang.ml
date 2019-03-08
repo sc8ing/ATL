@@ -4,12 +4,14 @@ type rule =
   | SO
   | Converse
   | Contrap
+  | DDO
 let string_of_rule = function
   | Premise -> "premise"
   | PO -> "PO"
   | SO -> "SO"
   | Converse -> "conversion"
   | Contrap -> "contraposition"
+  | DDO -> "DDO"
 
 type term = Term of char | Neg of term
 let rec string_of_term = function
@@ -18,6 +20,11 @@ let rec string_of_term = function
              ^ (Token.toString (Token.Minus))
              ^ (string_of_term t)
              ^ (Token.toString Token.RPar)
+let rec terms_equal t1 t2 =
+  match (t1, t2) with
+  | (Term t1, Term t2) -> Char.equal t1 t2
+  | (Neg t1, Neg t2) -> terms_equal t1 t2
+  | _ -> false
 
 type subPred = Plus of term | Minus of term
 let string_of_subPred = function

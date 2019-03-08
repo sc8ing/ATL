@@ -5,7 +5,6 @@ let removeOptions optionals =
   List.map (function Some x -> x | _ -> failwith "error") somesOnly
 
 (* stolen from https://stackoverflow.com/questions/3969321/lazy-n-choose-k-in-ocaml *)
-    (*
 let rec choose k l =
   if k = 0  then [ [] ]
   else
@@ -19,8 +18,6 @@ let rec choose k l =
           let starting_with_h = List.map (fun sublist -> h :: sublist) (choose (pred k) t) in
           let not_starting_with_h = choose k t in
           starting_with_h @ not_starting_with_h
-       *)
-
 
 
 
@@ -41,12 +38,14 @@ let verify premises conclusion =
       let applySingle jud rule = Logic.applyIfEquivalent rule [jud] in
       let applyEachRule jud = removeOptions (List.map (applySingle jud) unOpRules) in
       let judsFromUnOps = List.concat (List.map applyEachRule judgements) in
-      (* DDO/RAA and other binop rules not yet included---
+
       let binOpRules = [ DDO ] in
       let judPairs = choose 2 judgements in
-      let judsFromBinOps = List.map2 (fun rule juds -> appToJuds rule juds) binOpRules judPairs in
-      judsFromUnOps @ judsFromBinOps *)
-      verify judsFromUnOps conclusion
+      let applyDouble juds rule = Logic.applyIfEquivalent rule juds in
+      let applyEachRule juds = removeOptions (List.map (applyDouble juds) binOpRules) in
+      let judsFromBinOps = List.concat (List.map applyEachRule judPairs) in
+
+      verify (judsFromUnOps @ judsFromBinOps) conclusion
   in
   let jFromP p = { statement = p
                  ; refs = []

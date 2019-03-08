@@ -36,6 +36,8 @@ let negateTerm (t:Lang.term) : Lang.term =
 
 
 (* --------------------- logic functions --------------------- *)
+(* Note: Operations that are always possible always return a result.
+ * Operations that require valid arguments (i.e. DDO) return options *)
 let rec predicateObverse = function
   | Statement { sub; pred = Plus t } ->
     let term' = match t with Neg t -> t | Term _ -> t in
@@ -70,8 +72,18 @@ let contrapositive s =
   | I -> Statement { sub = Plus predTerm'; pred = Plus subTerm' }
   | O -> Statement { sub = Plus predTerm'; pred = Minus subTerm' }
 
-
-
+let ddo s1 s2 =
+  let ddo matrixSub omniPred =
+    Statement { sub = matrixSub; pred = omniPred }
+  in
+  match (s1, s2) with
+  | (Statement { sub = Minus omniSterm; pred = omniP },
+     Statement { sub = matrixS; pred = Plus matrixPterm })
+    when (Lang.terms_equal omniSterm matrixPterm) -> Some (ddo matrixS omniP)
+  | (Statement { sub = matrixS; pred = Plus matrixPterm },
+     Statement { sub = Minus omniSterm; pred = omniP })
+    when (Lang.terms_equal omniSterm matrixPterm) -> Some (ddo matrixS omniP)
+  | _ -> None
 
 
 let applyIfEquivalent rule operands =
@@ -95,6 +107,13 @@ let applyIfEquivalent rule operands =
                       ; refs = [rand]
                       ; rule = rule }
      | _ -> None)
+  | (DDO, [rand1; rand2]) ->
+    let ddo = ddo rand1.statement rand2.statement in
+    (match ddo with
+     | None -> None
+     | Some der -> Some { statement = der
+                        ; refs = operands
+                        ; rule = rule })
   | _ ->
     let rands = Lang.string_of_judgements operands in
     let rule = Lang.string_of_rule rule in

@@ -44,26 +44,32 @@ let rec string_of_statement = function
 type judgement = { statement : statement
                  ; refs : judgement list
                  ; rule : rule }
-let rec string_of_judgement { statement; refs; rule } =
-  let rec string_of_judgement { statement; refs; rule} lineNumber =
-    Printf.sprintf "%d\. %s\t(" lineNumber (string_of_statement statement)
-    ^ 
+let linesIn str =
+  let rec linesIn str count start =
+    try
+      let l = String.index_from str start '\n' in
+      linesIn str (count+1) (l+1)
+    with Not_found -> count
   in
-  let statement = string_of_statement jud.statement in
-  let rule = string_of_rule jud.rule in
-  let lineRefs = List.fold_left (fun lines j -> ((List.hd lines) - (linesIn (string_of_judgement j))) :: lines) [0] jud.refs in
-  let lineRefs = List.map (fun l -> line - l) lineRefs in
-  let lineRefs = List.fold_left (fun acc i -> (string_of_int i) ^ ", ") lineRefs in
-  let acc' = Printf.sprintf "%d\. %s\t(%s%s\n" line statement lineRefs rule in
-  let refs = List.map (string_of_judgement
+  linesIn str 0 0
+let left (a, _) = a
+let right (_, b) = b
+let removeEnd ls =
+  let ls' = List.mapi (fun i e -> if i = (List.length ls)-1 then None else Some e) ls in
+  removeOptions ls'
 
-
-  let refs =
-    if rule = Premise then ""
-    else List.fold_left (fun acc s -> acc ^ (string_of_judgement s) ^ ",") "" refs
+let string_of_judgement judgement =
+  let rec string_of_judgement { statement; refs; rule } startLine =
+    let stateStr = string_of_statement statement in
+    let ruleStr = string_of_rule rule in
+    let lineRefs = List.fold_left (fun lines j -> ((List.hd lines) - linesIn (string_of_judgement j 0)) :: lines) [startLine-1] refs in
+    let lineRefs = List.fold_left (fun acc line -> acc ^ (string_of_int line) ^ ", ") "" (List.rev lineRefs) in
+    let linesRefs = removeEnd lineRefs in
+    let refsStr = List.fold_left (fun acc ref -> 
+        let refStr = string_of_judgement ref (right acc) in
+        (refStr ^ (left acc), (right acc) - (linesIn refStr))) ("", startLine - 1) refs
+    in
+    let refsStr = left refsStr in
+    Printf.sprintf "%s%d. %s\t(%s%s)\n" refsStr startLine stateStr lineRefs ruleStr
   in
-  let statement = string_of_statement statement in
-  let rule = string_of_rule rule in
-  Printf.sprintf "%s\t(%s %s)" statement refs rule
-let string_of_judgements judgements =
-  List.fold_left (fun acc s -> acc ^ (string_of_judgement s) ^ "\n") "" judgements
+  string_of_judgement judgement 3

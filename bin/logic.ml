@@ -115,7 +115,7 @@ let applyIfEquivalent rule operands =
                         ; refs = operands
                         ; rule = rule })
   | _ ->
-    let rands = Lang.string_of_judgements operands in
+    let rands = List.fold_left (fun acc s -> acc ^ (Lang.string_of_statement s.statement)) "" operands in
     let rule = Lang.string_of_rule rule in
     failwith (Printf.sprintf "%s not applicable to arguments %s" rule rands)
 

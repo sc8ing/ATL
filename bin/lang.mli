@@ -21,4 +21,3 @@ type judgement = { statement : statement
                  ; refs : judgement list
                  ; rule : rule }
 val string_of_judgement : judgement -> string
-val string_of_judgements : judgement list -> string

@@ -8,7 +8,7 @@ let rec repl () =
   let input = loop "" in
   let tokens = Tokenizer.tokenize input in
   let (premises, conclusion) = Parser.parse tokens in
-  let valid = Verify.verify premises conclusion in
+  let valid = Verify.findDerivation premises conclusion in
   let valid =
     match valid with
     | None -> "not valid"

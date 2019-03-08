@@ -21,15 +21,15 @@ let rec choose k l =
 
 
 
-(* verify:
+(* findDerivation:
  *  if conclusion is in judgements, return judgement
  *  else
  *    let judgements' = applying all possible rules to every statement derived so far in
  *    let judgements' = { judgements } U { judgements' } in (without redundant statements) in
- *    verify judgements' conclusion
+ *    findDerivation judgements' conclusion
  *)
-let verify premises conclusion =
-  let rec verify judgements conclusion =
+let findDerivation premises conclusion =
+  let rec findDerivation judgements conclusion =
     let judEqualsConc = (fun j -> j.statement = conclusion) in
     let answer = List.filter judEqualsConc judgements in
     if List.length answer != 0 then Some (List.nth answer 0)
@@ -45,13 +45,13 @@ let verify premises conclusion =
       let applyEachRule juds = removeOptions (List.map (applyDouble juds) binOpRules) in
       let judsFromBinOps = List.concat (List.map applyEachRule judPairs) in
 
-      verify (judsFromUnOps @ judsFromBinOps) conclusion
+      findDerivation (judsFromUnOps @ judsFromBinOps) conclusion
   in
   let jFromP p = { statement = p
                  ; refs = []
                  ; rule = Premise }
   in
   let premJudgements = List.map jFromP premises in
-  verify premJudgements conclusion
+  findDerivation premJudgements conclusion
 
 

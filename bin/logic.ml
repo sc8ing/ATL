@@ -40,10 +40,10 @@ let negateTerm (t:Lang.term) : Lang.term =
  * Operations that require valid arguments (i.e. DDO) return options *)
 let rec predicateObverse = function
   | Statement { sub; pred = Plus t } ->
-    let term' = match t with Neg t -> t | Term _ -> t in
+    let term' = negateTerm t in
     Statement { sub = sub; pred = Minus term' }
   | Statement { sub; pred = Minus t } ->
-    let term' = match t with Neg t -> t | Term _ -> t in
+    let term' = negateTerm t in
     Statement { sub = sub; pred = Plus term' }
   | Neg s -> Neg (predicateObverse s)
 

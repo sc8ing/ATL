@@ -54,22 +54,30 @@ let linesIn str =
   linesIn str 0 0
 let left (a, _) = a
 let right (_, b) = b
+let removeOptions optionals =
+  let somesOnly = List.filter (function None -> false | _ -> true) optionals in
+  List.map (function Some x -> x | _ -> failwith "error") somesOnly
 let removeEnd ls =
   let ls' = List.mapi (fun i e -> if i = (List.length ls)-1 then None else Some e) ls in
   removeOptions ls'
 
 let string_of_judgement judgement =
-  let rec string_of_judgement { statement; refs; rule } startLine =
+  let rec string_of_judgement { statement; refs; rule } startLineNum =
     let stateStr = string_of_statement statement in
     let ruleStr = string_of_rule rule in
-    let lineRefs = List.fold_left (fun lines j -> ((List.hd lines) - linesIn (string_of_judgement j 0)) :: lines) [startLine-1] refs in
-    let lineRefs = List.fold_left (fun acc line -> acc ^ (string_of_int line) ^ ", ") "" (List.rev lineRefs) in
-    let linesRefs = removeEnd lineRefs in
-    let refsStr = List.fold_left (fun acc ref -> 
+
+    let lineRefs = List.fold_left (fun lines j -> ((List.hd lines) - linesIn (string_of_judgement j 0)) :: lines) [startLineNum-1] refs in
+    let lineRefs = removeEnd lineRefs in
+    let lineRefs = List.map (fun n -> n + 1) lineRefs in
+    let lineRefsStr = List.fold_left (fun acc line -> acc ^ (string_of_int line) ^ ", ") "" (List.rev lineRefs) in
+
+    let aboveLines = List.fold_left (fun acc ref -> 
         let refStr = string_of_judgement ref (right acc) in
-        (refStr ^ (left acc), (right acc) - (linesIn refStr))) ("", startLine - 1) refs
+        (refStr ^ (left acc), (right acc) - (linesIn refStr))) ("", startLineNum - 1) refs
     in
-    let refsStr = left refsStr in
-    Printf.sprintf "%s%d. %s\t(%s%s)\n" refsStr startLine stateStr lineRefs ruleStr
+    let aboveLines = left aboveLines in
+
+    Printf.sprintf "%s%d. %s\t(%s%s)\n" aboveLines startLineNum stateStr lineRefsStr ruleStr
   in
-  string_of_judgement judgement 3
+  let startLineNum = linesIn (string_of_judgement judgement 0) in
+  string_of_judgement judgement (startLineNum+10)

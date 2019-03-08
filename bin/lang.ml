@@ -44,40 +44,61 @@ let rec string_of_statement = function
 type judgement = { statement : statement
                  ; refs : judgement list
                  ; rule : rule }
-let linesIn str =
-  let rec linesIn str count start =
-    try
-      let l = String.index_from str start '\n' in
-      linesIn str (count+1) (l+1)
-    with Not_found -> count
+(* returns the indexOf of e in a list *)
+let indexOf e ls =
+  let rec loop ls n =
+    match ls with
+    | [] -> failwith "didn't work"
+    | el :: _ when el = e -> n
+    | _ :: ls -> loop ls (n+1)
   in
-  linesIn str 0 0
-let left (a, _) = a
-let right (_, b) = b
-let removeOptions optionals =
-  let somesOnly = List.filter (function None -> false | _ -> true) optionals in
-  List.map (function Some x -> x | _ -> failwith "error") somesOnly
-let removeEnd ls =
-  let ls' = List.mapi (fun i e -> if i = (List.length ls)-1 then None else Some e) ls in
-  removeOptions ls'
+  loop ls 0
+
+let swap a b ls =
+  let aEl = List.nth ls a in
+  let bEl = List.nth ls b in
+  List.mapi (fun i el -> if i = a then bEl else if i = b then aEl else el) ls
 
 let string_of_judgement judgement =
-  let rec string_of_judgement { statement; refs; rule } startLineNum =
-    let stateStr = string_of_statement statement in
-    let ruleStr = string_of_rule rule in
-
-    let lineRefs = List.fold_left (fun lines j -> ((List.hd lines) - linesIn (string_of_judgement j 0)) :: lines) [startLineNum-1] refs in
-    let lineRefs = removeEnd lineRefs in
-    let lineRefs = List.map (fun n -> n + 1) lineRefs in
-    let lineRefsStr = List.fold_left (fun acc line -> acc ^ (string_of_int line) ^ ", ") "" (List.rev lineRefs) in
-
-    let aboveLines = List.fold_left (fun acc ref -> 
-        let refStr = string_of_judgement ref (right acc) in
-        (refStr ^ (left acc), (right acc) - (linesIn refStr))) ("", startLineNum - 1) refs
-    in
-    let aboveLines = left aboveLines in
-
-    Printf.sprintf "%s%d. %s\t(%s%s)\n" aboveLines startLineNum stateStr lineRefsStr ruleStr
+  let rec flatten jud =
+    let flatRefs = List.map flatten jud.refs in
+    let flat = jud :: (List.concat flatRefs) in
+    List.rev flat
   in
-  let startLineNum = linesIn (string_of_judgement judgement 0) in
-  string_of_judgement judgement (startLineNum+10)
+  let flat = flatten judgement in
+  let premisesFirst j1 j2 =
+    match (j1.rule, j2.rule) with
+    | (Premise, Premise) -> 0
+    | (Premise, _) -> -1
+    | (_, Premise) -> +1
+    | _ -> 0
+  in
+  let flat = List.stable_sort premisesFirst flat in
+  let rec sort cur flats =
+    if cur = (List.length flats) - 1 then flats
+    else
+      let curJud = List.nth flats cur in
+      if List.length curJud.refs = 0 then sort (cur+1) flats else
+      let refPositions = List.map (fun ref -> indexOf ref flats) curJud.refs in
+      let maxRef = List.fold_left (fun acc cur -> if cur > acc then cur else acc) (List.hd refPositions) refPositions in
+      if maxRef < cur then sort (cur+1) flats
+      else
+        let flats' = swap cur maxRef flats in
+        sort 0 flats'
+  in
+  let flat = sort 0 flat in
+  let justStatements = List.map (fun jud -> jud.statement) flat in
+  let addLineNumRefs jud =
+    let refStatements = List.map (fun j -> j.statement) jud.refs in
+    let refIndexes = List.map (fun ref -> 1 + indexOf ref justStatements) refStatements in
+    (jud, refIndexes)
+  in
+  let withLineNumRefs = List.map addLineNumRefs flat in
+  let makeLineString line (jud, refs) =
+    let statement = string_of_statement jud.statement in
+    let rule = string_of_rule jud.rule in
+    let refs = List.fold_left (fun acc i -> acc ^ (string_of_int i) ^ ", ") "" refs in
+    Printf.sprintf "%d. %s\t\t(%s%s)\n" (line+1) statement refs rule
+  in
+  let pieces = List.mapi makeLineString withLineNumRefs in
+  List.fold_left (fun acc s -> acc ^ s) "" pieces

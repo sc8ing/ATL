@@ -14,10 +14,7 @@ let rec repl () =
     | None -> "not valid"
     | Some judgement -> Lang.string_of_judgement judgement
   in
-  let premises = List.map Lang.string_of_statement premises in
-  let premises = List.fold_left (fun acc s -> acc ^ s ^ "\n") "" premises in
-  let conclusion = "/" ^ (Lang.string_of_statement conclusion) in
-  let _ = Printf.printf "%s%s\n%s" premises conclusion valid in
+  Printf.printf "%s" valid ;
   repl ()
 
 let () = repl ()

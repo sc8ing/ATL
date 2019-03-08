@@ -14,7 +14,10 @@ let string_of_rule = function
 type term = Term of char | Neg of term
 let rec string_of_term = function
   | Term c -> Char.escaped c
-  | Neg t -> (Token.toString (Token.Minus)) ^ (string_of_term t)
+  | Neg t -> (Token.toString Token.LPar)
+             ^ (Token.toString (Token.Minus))
+             ^ (string_of_term t)
+             ^ (Token.toString Token.RPar)
 
 type subPred = Plus of term | Minus of term
 let string_of_subPred = function
@@ -26,7 +29,10 @@ type statement =
   | Neg of statement
 let rec string_of_statement = function
   | Statement { sub; pred } -> (string_of_subPred sub) ^ (string_of_subPred pred)
-  | Neg statement -> (Token.toString Token.Minus) ^ string_of_statement statement
+  | Neg statement -> (Token.toString Token.Minus)
+                     ^ (Token.toString Token.LPar)
+                     ^ string_of_statement statement
+                     ^ (Token.toString Token.RPar)
 
 type judgement = { statement : statement
                  ; refs : judgement list

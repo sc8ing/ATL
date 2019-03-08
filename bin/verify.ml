@@ -1,7 +1,7 @@
 open Lang
 
 let removeOptions optionals =
-  let somesOnly = List.filter (fun x -> x = None) optionals in
+  let somesOnly = List.filter (function None -> false | _ -> true) optionals in
   List.map (function Some x -> x | _ -> failwith "error") somesOnly
 
 (* stolen from https://stackoverflow.com/questions/3969321/lazy-n-choose-k-in-ocaml *)

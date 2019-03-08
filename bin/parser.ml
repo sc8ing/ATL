@@ -11,9 +11,7 @@ let rec term (tokens : Token.t list) : Lang.term * Token.t list =
      | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
   | Minus :: tokens ->
     let (innerT, tokens) = term tokens in
-    (match tokens with
-     | RPar :: tokens -> (Neg innerT, tokens)
-     | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
+    (Neg innerT, tokens)
   | _ -> failwith "invalid term form"
 
 let subPred (tokens : Token.t list) : Lang.subPred * Token.t list =

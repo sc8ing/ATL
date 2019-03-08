@@ -45,6 +45,19 @@ type judgement = { statement : statement
                  ; refs : judgement list
                  ; rule : rule }
 let rec string_of_judgement { statement; refs; rule } =
+  let rec string_of_judgement { statement; refs; rule} lineNumber =
+    Printf.sprintf "%d\. %s\t(" lineNumber (string_of_statement statement)
+    ^ 
+  in
+  let statement = string_of_statement jud.statement in
+  let rule = string_of_rule jud.rule in
+  let lineRefs = List.fold_left (fun lines j -> ((List.hd lines) - (linesIn (string_of_judgement j))) :: lines) [0] jud.refs in
+  let lineRefs = List.map (fun l -> line - l) lineRefs in
+  let lineRefs = List.fold_left (fun acc i -> (string_of_int i) ^ ", ") lineRefs in
+  let acc' = Printf.sprintf "%d\. %s\t(%s%s\n" line statement lineRefs rule in
+  let refs = List.map (string_of_judgement
+
+
   let refs =
     if rule = Premise then ""
     else List.fold_left (fun acc s -> acc ^ (string_of_judgement s) ^ ",") "" refs

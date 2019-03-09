@@ -34,8 +34,32 @@ let negateTerm (t:Lang.term) : Lang.term =
   | Term _ as t -> Neg t
   | Neg t -> t
 
+let negateStatement = function
+  | Neg s -> s
+  | Statement _ as s -> Neg s
 
-(* --------------------- logic functions --------------------- *)
+let categoricallyContradicts s1 s2 =
+  let (s1a, s1b) = statementTerms s1 in
+  let (s2a, s2b) = statementTerms s2 in
+  if s1a <> s2a || s1b <> s2b then false
+  else
+    match (statementType s1, statementType s2) with
+    | (A, O) | (E, I) | (I, E) | (O, A) -> true
+    | _ -> false
+
+let directlyContradicts s1 s2 =
+  match (s1, s2) with
+  | (Neg s1, (Statement _ as s2)) -> s1 = s2
+  | (Statement _ as s1, Neg s2) -> s1 = s2
+  | _ -> false
+
+let contradicts s1 s2 =
+  if categoricallyContradicts s1 s2
+   || directlyContradicts s1 s2
+  then true
+  else false
+
+(* ---------------- logic functions (corresponding to a rule) ----------------- *)
 let predicateObverse = function
   | Statement { sub; pred = Plus t } ->
     let term' = negateTerm t in
@@ -108,6 +132,7 @@ let ddo s1 s2 =
 let applyIfEquivalent rule operands =
   match (rule, operands) with
   | (Premise, _) -> failwith "cannot apply premise rule"
+  | (Supposition, _) -> failwith "cannot apply supposition rule"
   | (PO, [rand]) ->
     let app = predicateObverse rand.statement in
     (match app with

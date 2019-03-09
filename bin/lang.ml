@@ -1,5 +1,6 @@
 type rule = 
   | Premise
+  | Supposition
   | PO
   | SO
   | Converse
@@ -9,6 +10,7 @@ type rule =
   | DDO
 let string_of_rule = function
   | Premise -> "premise"
+  | Supposition -> "supposition"
   | PO -> "PO" (* predicate obversion *)
   | SO -> "SO" (* statement obversion *)
   | Converse -> "conversion"
@@ -70,14 +72,17 @@ let string_of_judgement judgement =
     List.rev flat
   in
   let flat = flatten judgement in
-  let premisesFirst j1 j2 =
+  let givensFirst j1 j2 =
     match (j1.rule, j2.rule) with
     | (Premise, Premise) -> 0
+    | (Supposition, Supposition) -> 0
     | (Premise, _) -> -1
     | (_, Premise) -> +1
+    | (Supposition, _) -> -1
+    | (_, Supposition) -> +1
     | _ -> 0
   in
-  let flat = List.stable_sort premisesFirst flat in
+  let flat = List.stable_sort givensFirst flat in
   let rec sort cur flats =
     if cur = (List.length flats) - 1 then flats
     else

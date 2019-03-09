@@ -55,3 +55,56 @@ let findDerivation premises conclusion =
   findDerivation premJudgements conclusion
 
 
+(* findRAA:
+ *  Assume truth of all premises and the negation of the conclusion.
+ *  If there's a contradiction, return the judgements that lead to it.
+ *  Otherwise, apply all possible rules to the judgements and repeat with new judgements.
+ *)
+let findRAA premises conclusion =
+  let rec findRAA judgements =
+    let contradictions = List.map (fun j1 ->
+        let s1 = j1.statement in
+        let cont = List.find_opt (fun j2 -> Logic.contradicts s1 j2.statement) judgements in
+        match cont with
+        | None -> None
+        | Some j2 -> Some (j1, j2)
+      ) judgements
+    in
+    let contradictions = removeOptions contradictions in
+    (* should these functions (findRAA and findDerivation) really return options? *)
+    if List.length contradictions > 0 then Some (List.hd contradictions)
+    else
+      let unOpRules = [ PO; SO; Converse; Contrap; ADN; RDN ] in
+      let applySingle jud rule = Logic.applyIfEquivalent rule [jud] in
+      let applyEachRule jud = removeOptions (List.map (applySingle jud) unOpRules) in
+      let judsFromUnOps = List.concat (List.map applyEachRule judgements) in
+
+      let binOpRules = [ DDO ] in
+      let judPairs = choose 2 judgements in
+      let applyDouble juds rule = Logic.applyIfEquivalent rule juds in
+      let applyEachRule juds = removeOptions (List.map (applyDouble juds) binOpRules) in
+      let judsFromBinOps = List.concat (List.map applyEachRule judPairs) in
+
+      findRAA (judsFromUnOps @ judsFromBinOps)
+  in
+  let jFromP p = { statement = p
+                 ; refs = []
+                 ; rule = Premise }
+  in
+  let premJudgements = List.map jFromP premises in
+  let assumption = { statement = Logic.negateStatement conclusion
+                   ; refs = []
+                   ; rule = Supposition }
+  in
+  let judgements = assumption :: premJudgements in
+  findRAA judgements
+
+
+
+
+
+
+
+
+
+

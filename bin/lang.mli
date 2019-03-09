@@ -1,5 +1,6 @@
 type rule = 
   | Premise
+  | Supposition
   | PO
   | SO
   | Converse

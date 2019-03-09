@@ -84,6 +84,13 @@ let contrapositive s =
     Some (Statement { sub = appNeg sub; pred = appNeg pred })
   | Some (Neg _) -> assert false
 
+let addDN = function
+  | statement -> Neg (Neg statement)
+
+let removeDN = function
+  | Neg (Neg statement) -> Some statement
+  | _ -> None
+
 let ddo s1 s2 =
   let ddo matrixSub omniPred =
     Statement { sub = matrixSub; pred = omniPred }
@@ -135,6 +142,19 @@ let applyIfEquivalent rule operands =
                          ; refs = [rand]
                          ; rule = rule })
      | _ -> None)
+
+  | (ADN, [rand]) -> Some { statement = addDN rand.statement
+                          ; refs = [rand]
+                          ; rule = rule }
+
+  | (RDN, [rand]) ->
+    let app = removeDN rand.statement in
+    (match app with
+     | None -> None
+     | Some s -> Some { statement = s
+                      ; refs = [rand]
+                      ; rule = rule })
+
   | (DDO, [rand1; rand2]) ->
     let ddo = ddo rand1.statement rand2.statement in
     (match ddo with

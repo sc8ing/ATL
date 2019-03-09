@@ -4,14 +4,18 @@ type rule =
   | SO
   | Converse
   | Contrap
+  | ADN
+  | RDN
   | DDO
 let string_of_rule = function
   | Premise -> "premise"
-  | PO -> "PO"
-  | SO -> "SO"
+  | PO -> "PO" (* predicate obversion *)
+  | SO -> "SO" (* statement obversion *)
   | Converse -> "conversion"
   | Contrap -> "contraposition"
-  | DDO -> "DDO"
+  | ADN -> "add DN" (* double negation *)
+  | RDN -> "remove DN"
+  | DDO -> "DDO" (* dictum de omni *)
 
 type term = Term of char | Neg of term
 let rec string_of_term = function

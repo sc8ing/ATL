@@ -4,6 +4,8 @@ type rule =
   | SO
   | Converse
   | Contrap
+  | ADN
+  | RDN
   | DDO
 val string_of_rule : rule -> string
 

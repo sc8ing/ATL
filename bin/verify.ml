@@ -34,7 +34,7 @@ let findDerivation premises conclusion =
     let answer = List.filter judEqualsConc judgements in
     if List.length answer != 0 then Some (List.nth answer 0)
     else
-      let unOpRules = [ PO; SO; Converse; Contrap ] in
+      let unOpRules = [ PO; SO; Converse; Contrap; ADN; RDN ] in
       let applySingle jud rule = Logic.applyIfEquivalent rule [jud] in
       let applyEachRule jud = removeOptions (List.map (applySingle jud) unOpRules) in
       let judsFromUnOps = List.concat (List.map applyEachRule judgements) in

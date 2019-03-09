@@ -28,11 +28,30 @@ let rec statement tokens =
     (match tokens with
      | RPar :: tokens -> (innerS, tokens)
      | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
+  (* this case is ambiguous to the parser because both of the following can be statements:
+   * -(+A+B) and -(-A)+B
+   * ~ -(statement) and -term+term
+   * maybe recursive descent isn't the best option for this kind of grammar *)
   | Minus :: LPar :: tokens ->
-    let (innerS, tokens) = statement tokens in
-    (match tokens with
-     | RPar :: tokens -> (Neg innerS, tokens)
-     | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
+    (* statement case *)
+    (try
+       let (innerS, tokens) = statement tokens in
+       (match tokens with
+        | RPar :: tokens -> (Neg innerS, tokens)
+        | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
+     with Failure _ ->
+     (* term case *)
+     try
+       let (sub, tokens) = term (LPar :: tokens) in
+       (match tokens with
+        | Plus :: tokens ->
+          let (pred, tokens) = term tokens in
+          (Statement { quan = Universal; qual = Affirmative; sub; pred }, tokens)
+        | Minus :: tokens ->
+          let (pred, tokens) = term tokens in
+          (Statement { quan = Universal; qual = Negative; sub; pred }, tokens)
+        | _ -> failwith "invalid statement")
+     with Failure _ -> failwith "bad statement")
   | Plus :: tokens ->
     let (sub, tokens) = term tokens in
     (match tokens with

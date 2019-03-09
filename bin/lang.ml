@@ -32,16 +32,16 @@ let rec terms_equal t1 t2 =
   | (Neg t1, Neg t2) -> terms_equal t1 t2
   | _ -> false
 
-type subPred = Plus of term | Minus of term
-let string_of_subPred = function
-  | Plus t -> (Token.toString Token.Plus) ^ (string_of_term t)
-  | Minus t -> (Token.toString Token.Minus) ^ (string_of_term t)
+type quantity = Universal | Particular
+type quality = Affirmative | Negative
 
-type statement =
-  | Statement of { sub : subPred; pred : subPred }
-  | Neg of statement
+type statement = Statement of { quan : quantity; qual : quality; sub : term; pred : term }
+               | Neg of statement
 let rec string_of_statement = function
-  | Statement { sub; pred } -> (string_of_subPred sub) ^ (string_of_subPred pred)
+  | Statement { quan; qual; sub; pred } -> 
+    let first = match quan with Universal -> "-" | Particular -> "+" in
+    let second = match qual with Affirmative -> "+" | Negative -> "-" in
+    first ^ (string_of_term sub) ^ second ^ (string_of_term pred)
   | Neg statement -> (Token.toString Token.Minus)
                      ^ (Token.toString Token.LPar)
                      ^ string_of_statement statement

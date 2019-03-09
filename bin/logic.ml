@@ -4,16 +4,6 @@ type categoricalTypes = A | E | I | O
 (*let string_of_cat = function A -> 'A' | E -> 'E' | I -> 'I' | O -> 'O'*)
 
 (* --------------------- helper functions --------------------- *)
-let statementTerms s =
-  let rec statementParts = function
-    | Statement { sub; pred } -> (sub, pred)
-    | Neg s -> statementParts s
-  in
-  match statementParts s with
-  | (Plus a, Plus b) -> (a, b)
-  | (Plus a, Minus b) -> (a, b)
-  | (Minus a, Plus b) -> (a, b)
-  | (Minus a, Minus b) -> (a, b)
 
 let rec statementType = function
   | Neg s -> 
@@ -22,12 +12,15 @@ let rec statementType = function
      | E -> I
      | I -> E
      | O -> A)
-  | Statement { sub; pred } ->
-    (match (sub, pred) with
-     | (Plus _, Plus _) -> I
-     | (Plus _, Minus _) -> O
-     | (Minus _, Plus _) -> A
-     | (Minus _, Minus _) -> E)
+  | Statement { quan; qual; _ } ->
+    (match (quan, qual) with
+     | (Universal, Affirmative) -> A
+     | (Universal, Negative) -> E
+     | (Particular, Affirmative) -> I
+     | (Particular, Negative) -> O)
+
+let negateQuality = function Affirmative -> Negative | Negative -> Affirmative
+let negateQuantity = function Universal -> Particular | Particular -> Universal
 
 let negateTerm (t:Lang.term) : Lang.term =
   match t with
@@ -39,13 +32,14 @@ let negateStatement = function
   | Statement _ as s -> Neg s
 
 let categoricallyContradicts s1 s2 =
-  let (s1a, s1b) = statementTerms s1 in
-  let (s2a, s2b) = statementTerms s2 in
-  if s1a <> s2a || s1b <> s2b then false
-  else
-    match (statementType s1, statementType s2) with
-    | (A, O) | (E, I) | (I, E) | (O, A) -> true
-    | _ -> false
+  match (s1, s2) with
+  | (Statement s1i, Statement s2i) ->
+    if s1i.sub <> s2i.sub || s1i.pred <> s2i.pred then false
+    else
+      (match (statementType s1, statementType s2) with
+       | (A, O) | (E, I) | (I, E) | (O, A) -> true
+       | _ -> false)
+  | _ -> false
 
 let directlyContradicts s1 s2 =
   match (s1, s2) with
@@ -54,59 +48,53 @@ let directlyContradicts s1 s2 =
   | _ -> false
 
 let contradicts s1 s2 =
-  if categoricallyContradicts s1 s2
-   || directlyContradicts s1 s2
-  then true
-  else false
+  categoricallyContradicts s1 s2 || directlyContradicts s1 s2
+
+let categoricalContradictory = function
+  | Statement { quan; qual; sub; pred } ->
+    Some (Statement { quan = negateQuantity quan
+                    ; qual = negateQuality qual
+                    ; sub
+                    ; pred })
+  | _ -> None
 
 (* ---------------- logic functions (corresponding to a rule) ----------------- *)
 let predicateObverse = function
-  | Statement { sub; pred = Plus t } ->
-    let term' = negateTerm t in
-    Some (Statement { sub = sub; pred = Minus term' })
-  | Statement { sub; pred = Minus t } ->
-    let term' = negateTerm t in
-    Some (Statement { sub = sub; pred = Plus term' })
+  | Statement { quan; qual; sub; pred } ->
+    Some (Statement { quan
+                    ; qual = negateQuality qual
+                    ; sub
+                    ; pred = negateTerm pred })
   | _ -> None
 
 let statementObverse = function
-  | Neg ((Statement _) as s) -> 
-    let (subTerm, predTerm) = statementTerms s in
-    (match statementType s with
-    | A -> Some (Statement { sub = Plus subTerm; pred = Minus predTerm })
-    | E -> Some (Statement { sub = Plus subTerm; pred = Plus predTerm })
-    | I -> Some (Statement { sub = Minus subTerm; pred = Minus predTerm })
-    | O -> Some (Statement { sub = Minus subTerm; pred = Plus predTerm }))
-  | (Statement _) as s ->
-    let (subTerm, predTerm) = statementTerms s in
-    (match statementType s with
-    | A -> Some (Neg ((Statement { sub = Plus subTerm; pred = Minus predTerm })))
-    | E -> Some (Neg (Statement { sub = Plus subTerm; pred = Plus predTerm }))
-    | I -> Some (Neg (Statement { sub = Minus subTerm; pred = Minus predTerm }))
-    | O -> Some (Neg (Statement { sub = Minus subTerm; pred = Plus predTerm })))
+  | Statement _ as s ->
+    let catCon = categoricalContradictory s in
+    (match catCon with
+     | None -> failwith "shouldn't happen"
+     | Some c -> Some (Neg c))
+  | Neg (Statement _ as s) ->
+    let catCon = categoricalContradictory s in
+    (match catCon with
+     | None -> failwith "shouldn't happen"
+     | Some c -> Some c)
   | _ -> None
 
 let converse = function
-  | Statement { sub = Minus predTerm; pred = Plus subTerm } ->
-    Some (Statement { sub = Minus subTerm; pred = Plus predTerm })
-  | Statement { sub = Minus predTerm; pred = Minus subTerm } ->
-    Some (Statement { sub = Minus subTerm; pred = Minus predTerm })
-  | Statement { sub = Plus predTerm; pred = Plus subTerm } ->
-    Some (Statement { sub = Plus subTerm; pred = Plus predTerm })
-  | Statement { sub = Plus predTerm; pred = Minus subTerm } ->
-    Some (Statement { sub = Plus subTerm; pred = Minus predTerm })
+  | Statement { quan; qual; sub; pred } ->
+    Some (Statement { quan
+                    ; qual
+                    ; sub = pred
+                    ; pred = sub })
   | _ -> None
 
-let contrapositive s =
-  let appNeg = function
-    | Plus t -> Plus (negateTerm t)
-    | Minus t -> Minus (negateTerm t)
-  in
-  match converse s with
-  | None -> None
-  | Some (Statement { sub; pred }) ->
-    Some (Statement { sub = appNeg sub; pred = appNeg pred })
-  | Some (Neg _) -> assert false
+let contrapositive = function
+  | Statement { quan; qual; sub; pred } ->
+    Some (Statement { quan
+                    ; qual
+                    ; sub = negateTerm pred
+                    ; pred = negateTerm sub })
+  | _ -> None
 
 let addDN = function
   | statement -> Neg (Neg statement)
@@ -116,16 +104,13 @@ let removeDN = function
   | _ -> None
 
 let ddo s1 s2 =
-  let ddo matrixSub omniPred =
-    Statement { sub = matrixSub; pred = omniPred }
-  in
   match (s1, s2) with
-  | (Statement { sub = Minus omniSterm; pred = omniP },
-     Statement { sub = matrixS; pred = Plus matrixPterm })
-    when (Lang.terms_equal omniSterm matrixPterm) -> Some (ddo matrixS omniP)
-  | (Statement { sub = matrixS; pred = Plus matrixPterm },
-     Statement { sub = Minus omniSterm; pred = omniP })
-    when (Lang.terms_equal omniSterm matrixPterm) -> Some (ddo matrixS omniP)
+  | (Statement { quan; qual = Affirmative; sub; pred = mPred },
+     Statement { quan = Universal; qual; sub = oSub; pred }) when oSub = mPred ->
+    Some (Statement { quan; qual; sub; pred })
+  | (Statement { quan = Universal; qual; sub = oSub; pred },
+     Statement { quan; qual = Affirmative; sub; pred = mPred }) when oSub = mPred ->
+    Some (Statement { quan; qual; sub; pred })
   | _ -> None
 
 

@@ -14,33 +14,39 @@ let rec term (tokens : Token.t list) : Lang.term * Token.t list =
     (Neg innerT, tokens)
   | _ -> failwith "invalid term form"
 
-let subPred (tokens : Token.t list) : Lang.subPred * Token.t list =
-  match tokens with
-  | Plus :: tokens ->
-    let (innerT, tokens) = term tokens in
-    (Plus innerT, tokens)
-  | Minus :: tokens ->
-    let (innerT, tokens) = term tokens in
-    (Minus innerT, tokens)
-  | _ -> failwith "invalid term prefix"
-
 let rec statement tokens =
   match tokens with
   | LPar :: tokens ->
     let (innerS, tokens) = statement tokens in
     (match tokens with
-     | RPar :: tokens -> (Printf.printf "Parser: statement: %s" (Lang.string_of_statement innerS)) ; (innerS, tokens)
+     | RPar :: tokens -> (innerS, tokens)
      | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
   | Minus :: LPar :: tokens ->
     let (innerS, tokens) = statement tokens in
     (match tokens with
      | RPar :: tokens -> (Neg innerS, tokens)
      | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
-  | Plus :: _ | Minus :: _ ->
-    let (sub, tokens) = subPred tokens in
-    let (pred, tokens) = subPred tokens in
-    (Statement { sub = sub; pred = pred }, tokens)
-  | _ -> failwith "invalid statement"
+  | Plus :: tokens ->
+    let (sub, tokens) = term tokens in
+    (match tokens with
+     | Plus :: tokens ->
+       let (pred, tokens) = term tokens in
+       (Statement { quan = Particular; qual = Affirmative; sub; pred }, tokens)
+     | Minus :: tokens ->
+       let (pred, tokens) = term tokens in
+       (Statement { quan = Particular; qual = Negative; sub; pred }, tokens)
+     | _ -> failwith "invalid statement")
+   | Minus :: tokens ->
+    let (sub, tokens) = term tokens in
+    (match tokens with
+     | Plus :: tokens ->
+       let (pred, tokens) = term tokens in
+       (Statement { quan = Universal; qual = Affirmative; sub; pred }, tokens)
+     | Minus :: tokens ->
+       let (pred, tokens) = term tokens in
+       (Statement { quan = Universal; qual = Negative; sub; pred }, tokens)
+     | _ -> failwith "invalid statement")
+   | _ -> failwith "invalid statement"
 
 let parse tokens =
   let rec loop premises tokens =

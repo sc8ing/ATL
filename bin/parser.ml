@@ -6,14 +6,20 @@ let rec term (tokens : Token.t list) : Lang.term * Token.t list =
   | Term e :: STIndicator :: tokens -> (SingleTerm e, tokens)
   | Term e :: tokens -> (Term e, tokens)
   | LPar :: tokens ->
-    let (innerT, tokens) = term tokens in
+    let (innerT, tokens) = innerTerm tokens in
     (match tokens with
      | RPar :: tokens -> (innerT, tokens)
      | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
-  | Minus :: tokens ->
-    let (innerT, tokens) = term tokens in
-    (Neg innerT, tokens)
   | _ -> failwith "invalid term form"
+
+and innerTerm = function
+  | Minus :: Term e :: tokens -> (Neg (Term e), tokens)
+  | Minus :: LPar :: tokens ->
+    let (innerT, tokens) = innerTerm tokens in
+    (match tokens with
+     | RPar :: tokens -> (innerT, tokens)
+     | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
+  | tokens -> term tokens
 
 let rec statement tokens =
   match tokens with

@@ -4,6 +4,7 @@ type t =
   | Plus
   | Minus
   | Term of char (* elementary term *) (* any way to enfore capitalization in type? *)
+  | STIndicator
   | ConcInd (* conclusion indicator *)
 
 let toString token = 
@@ -13,6 +14,7 @@ let toString token =
   | Plus -> "+"
   | Minus -> "-"
   | Term c -> (Char.escaped c) 
+  | STIndicator -> "*"
   | ConcInd -> "/"
 
 let toStrings tokens =

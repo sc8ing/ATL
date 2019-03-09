@@ -34,7 +34,7 @@ let findDerivation premises conclusion =
     let answer = List.filter judEqualsConc judgements in
     if List.length answer != 0 then Some (List.nth answer 0)
     else
-      let unOpRules = [ PO; SO; Converse; Contrap; ADN; RDN ] in
+      let unOpRules = [ PO; SO; Converse; Contrap; ADN; RDN; ST ] in
       let applySingle jud rule = Logic.applyIfEquivalent rule [jud] in
       let applyEachRule jud = removeOptions (List.map (applySingle jud) unOpRules) in
       let judsFromUnOps = List.concat (List.map applyEachRule judgements) in
@@ -74,7 +74,7 @@ let findRAA premises conclusion =
     (* should these functions (findRAA and findDerivation) really return options? *)
     if List.length contradictions > 0 then Some (List.hd contradictions)
     else
-      let unOpRules = [ PO; SO; Converse; Contrap; ADN; RDN ] in
+      let unOpRules = [ PO; SO; Converse; Contrap; ADN; RDN; ST ] in
       let applySingle jud rule = Logic.applyIfEquivalent rule [jud] in
       let applyEachRule jud = removeOptions (List.map (applySingle jud) unOpRules) in
       let judsFromUnOps = List.concat (List.map applyEachRule judgements) in

@@ -26,8 +26,8 @@ let rec repl () =
       String.make 30 '-' ^ "RAA" ^ String.make 30 '-' ^ "\n"
       ^ Printf.sprintf "%s\ncontradicts\n\n%s" j1 j2
   in
-  Printf.printf "%s" derivation ;
-  Printf.printf "%s" raa ;
+  Printf.printf "\n%s" derivation ;
+  Printf.printf "\n%s" raa ;
   repl ()
 
 let () = repl ()

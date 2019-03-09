@@ -3,6 +3,7 @@ open Token
 
 let rec term (tokens : Token.t list) : Lang.term * Token.t list =
   match tokens with
+  | Term e :: STIndicator :: tokens -> (SingleTerm e, tokens)
   | Term e :: tokens -> (Term e, tokens)
   | LPar :: tokens ->
     let (innerT, tokens) = term tokens in

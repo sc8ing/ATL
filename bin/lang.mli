@@ -7,12 +7,12 @@ type rule =
   | Contrap
   | ADN
   | RDN
+  | ST
   | DDO
 val string_of_rule : rule -> string
 
-type term = Term of char | Neg of term
+type term = SingleTerm of char | Term of char | Neg of term
 val string_of_term : term -> string
-val terms_equal : term -> term -> bool
 
 type quantity = Universal | Particular
 type quality = Affirmative | Negative

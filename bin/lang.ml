@@ -7,6 +7,7 @@ type rule =
   | Contrap
   | ADN
   | RDN
+  | ST
   | DDO
 let string_of_rule = function
   | Premise -> "premise"
@@ -17,20 +18,17 @@ let string_of_rule = function
   | Contrap -> "contraposition"
   | ADN -> "add DN" (* double negation *)
   | RDN -> "remove DN"
+  | ST -> "single term"
   | DDO -> "DDO" (* dictum de omni *)
 
-type term = Term of char | Neg of term
+type term = SingleTerm of char | Term of char | Neg of term
 let rec string_of_term = function
+  | SingleTerm c -> Char.escaped c ^ (Token.toString Token.STIndicator)
   | Term c -> Char.escaped c
   | Neg t -> (Token.toString Token.LPar)
              ^ (Token.toString (Token.Minus))
              ^ (string_of_term t)
              ^ (Token.toString Token.RPar)
-let rec terms_equal t1 t2 =
-  match (t1, t2) with
-  | (Term t1, Term t2) -> Char.equal t1 t2
-  | (Neg t1, Neg t2) -> terms_equal t1 t2
-  | _ -> false
 
 type quantity = Universal | Particular
 type quality = Affirmative | Negative

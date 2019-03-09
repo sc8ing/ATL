@@ -34,6 +34,7 @@ let tokenize s =
       | ')' :: chars -> loop (RPar :: tokens) chars
       | '+' :: chars -> loop (Plus :: tokens) chars
       | '-' :: chars -> loop (Minus :: tokens) chars
+      | '*' :: chars -> loop (STIndicator :: tokens) chars
       | '/' :: chars -> loop (ConcInd :: tokens) chars
       | c :: chars ->
         if isUpperCaseChar c then loop (Term c :: tokens) chars

@@ -24,6 +24,7 @@ let negateQuantity = function Universal -> Particular | Particular -> Universal
 
 let negateTerm (t:Lang.term) : Lang.term =
   match t with
+  | SingleTerm _ as t -> Neg t
   | Term _ as t -> Neg t
   | Neg t -> t
 
@@ -103,6 +104,17 @@ let removeDN = function
   | Neg (Neg statement) -> Some statement
   | _ -> None
 
+let universalizeST = function
+  | Statement { quan = Particular
+              ; qual
+              ; sub = SingleTerm _ as sub
+              ; pred } ->
+    Some (Statement { quan = Universal
+                    ; qual
+                    ; sub
+                    ; pred })
+  | _ -> None
+
 let ddo s1 s2 =
   match (s1, s2) with
   | (Statement { quan; qual = Affirmative; sub; pred = mPred },
@@ -159,6 +171,14 @@ let applyIfEquivalent rule operands =
 
   | (RDN, [rand]) ->
     let app = removeDN rand.statement in
+    (match app with
+     | None -> None
+     | Some s -> Some { statement = s
+                      ; refs = [rand]
+                      ; rule = rule })
+
+  | (ST, [rand]) ->
+    let app = universalizeST rand.statement in
     (match app with
      | None -> None
      | Some s -> Some { statement = s

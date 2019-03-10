@@ -13,6 +13,7 @@ let rec term (tokens : Token.t list) : Lang.term * Token.t list =
   | _ -> failwith "invalid term form"
 
 and innerTerm = function
+  | Minus :: Term e :: STIndicator :: tokens -> (Neg (SingleTerm e), tokens)
   | Minus :: Term e :: tokens -> (Neg (Term e), tokens)
   | Minus :: LPar :: tokens ->
     let (innerT, tokens) = innerTerm tokens in

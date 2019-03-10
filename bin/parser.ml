@@ -18,7 +18,7 @@ and innerTerm = function
   | Minus :: LPar :: tokens ->
     let (innerT, tokens) = innerTerm tokens in
     (match tokens with
-     | RPar :: tokens -> (innerT, tokens)
+     | RPar :: tokens -> (Neg innerT, tokens)
      | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
   | tokens -> term tokens
 
@@ -32,7 +32,7 @@ let rec statement tokens =
   (* this case is ambiguous to the parser because both of the following can be statements:
    * -(+A+B) and -(-A)+B
    * ~ -(statement) and -term+term
-   * maybe recursive descent isn't the best option for this kind of grammar *)
+   * maybe recursive descent isn't the best option for this kind of grammar? *)
   | Minus :: LPar :: tokens ->
     (* statement case *)
     (try

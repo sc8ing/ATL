@@ -1,13 +1,16 @@
 let rec repl () =
-  let rec loop s =
+  let rec loop premises =
     try
       let line = read_line () in
-      loop (s ^ line)
-    with End_of_file -> s
+      let tokens = Tokenizer.tokenize line in
+      match tokens with
+      | Token.ConcInd :: tokens ->
+        let conclusion = Parser.parse tokens in
+        (premises, conclusion)
+      | tokens -> loop ((Parser.parse tokens) :: premises)
+    with End_of_file -> failwith "end of file"
   in
-  let input = loop "" in
-  let tokens = Tokenizer.tokenize input in
-  let (premises, conclusion) = Parser.parse tokens in
+  let (premises, conclusion) = loop [] in
   let derivation = Verify.findDerivation premises conclusion in
   let derivation =
     match derivation with

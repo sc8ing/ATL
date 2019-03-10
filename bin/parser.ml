@@ -101,18 +101,12 @@ let rec statement tokens =
    | _ -> failwith "invalid statement"
 
 let parse tokens =
-  let rec loop premises tokens =
-    match tokens with
-    | [] -> failwith "missing conclusion"
-    | ConcInd :: tokens ->
-      let (conclusion, tokens) = statement tokens in
-      if List.length tokens != 0 then failwith "extra characters after conclusion"
-      else (premises, conclusion)
-    | anythingElse ->
-      let (premise, tokens) = statement anythingElse in
-      loop (premise :: premises) tokens
-  in
-  let (premises, conclusion) = loop [] tokens in
-  let premises = List.rev premises in
-  (premises, conclusion)
+  let (result, leftOver) = statement tokens in
+  match leftOver with
+  | [] -> result
+  | _ -> failwith "found parse but extra tokens follow"
+
+
+
+
 

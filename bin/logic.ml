@@ -24,9 +24,8 @@ let negateQuantity = function Universal -> Particular | Particular -> Universal
 
 let negateTerm (t:Lang.term) : Lang.term =
   match t with
-  | SingleTerm _ as t -> Neg t
-  | Term _ as t -> Neg t
   | Neg t -> t
+  | nonNeg -> Neg nonNeg
 
 let negateStatement = function
   | Neg s -> s

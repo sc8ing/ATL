@@ -13,17 +13,6 @@ let explode s =
   in
   repeat 0
 
-(*let implode chars =
-  let res = Bytes.create (List.length chars) in
-  let rec repeat i chars =
-    match chars with
-    | [] -> res
-    | char :: chars ->
-       Bytes.set res i char;
-       repeat (i + 1) chars
-  in
-  Bytes.to_string (repeat 0 chars)*)
-
 let tokenize s =
   let tokenize chars =
     let rec loop tokens chars =

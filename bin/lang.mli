@@ -11,7 +11,14 @@ type rule =
   | DDO
 val string_of_rule : rule -> string
 
-type term = SingleTerm of char | Term of char | Neg of term
+type term =
+  | Term of char
+  | SingleTerm of char
+  | Neg of term
+  | Intersection of term * term
+  | Without of term * term
+  | Union of term * term
+  | Nor of term * term
 val string_of_term : term -> string
 
 type quantity = Universal | Particular

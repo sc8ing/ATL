@@ -6,10 +6,35 @@ let rec term (tokens : Token.t list) : Lang.term * Token.t list =
   | Term e :: STIndicator :: tokens -> (SingleTerm e, tokens)
   | Term e :: tokens -> (Term e, tokens)
   | LPar :: tokens ->
-    let (innerT, tokens) = innerTerm tokens in
-    (match tokens with
-     | RPar :: tokens -> (innerT, tokens)
-     | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
+    (* combined terms first *)
+    (try
+      let ctTermPart tokens =
+        match tokens with
+        | Plus :: tokens ->
+          let (t, tokens) = term tokens in
+          (Plus, t, tokens)
+        | Minus :: tokens ->
+          let (t, tokens) = term tokens in
+          (Minus, t, tokens)
+        | _ -> failwith "not a combined term part"
+      in
+      let (typLeft, leftTerm, tokens) = ctTermPart tokens in
+      let (typRight, rightTerm, tokens) = ctTermPart tokens in
+      match tokens with
+      | RPar :: tokens ->
+        (match (typLeft, typRight) with
+         | (Plus, Plus) -> (Intersection (leftTerm, rightTerm), tokens)
+         | (Plus, Minus) -> (Without (leftTerm, rightTerm), tokens)
+         | (Minus, Plus) -> (Union (leftTerm, rightTerm), tokens)
+         | (Minus, Minus) -> (Nor (leftTerm, rightTerm), tokens)
+         | _ -> failwith "should not be possible")
+      | _ -> failwith ("combined term missing closing " ^ (Token.toString Token.RPar))
+    (* then try normal terms *)
+    with Failure _ ->
+      let (innerT, tokens) = innerTerm tokens in
+      (match tokens with
+       | RPar :: tokens -> (innerT, tokens)
+       | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar))))
   | _ -> failwith "invalid term form"
 
 and innerTerm = function

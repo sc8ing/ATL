@@ -21,14 +21,45 @@ let string_of_rule = function
   | ST -> "single term"
   | DDO -> "DDO" (* dictum de omni *)
 
-type term = SingleTerm of char | Term of char | Neg of term
+type term =
+  | Term of char
+  | SingleTerm of char
+  | Neg of term
+  | Intersection of term * term
+  | Without of term * term
+  | Union of term * term
+  | Nor of term * term
 let rec string_of_term = function
-  | SingleTerm c -> Char.escaped c ^ (Token.toString Token.STIndicator)
   | Term c -> Char.escaped c
+  | SingleTerm c -> Char.escaped c ^ (Token.toString Token.STIndicator)
   | Neg t -> (Token.toString Token.LPar)
              ^ (Token.toString (Token.Minus))
              ^ (string_of_term t)
              ^ (Token.toString Token.RPar)
+  | Intersection (t1, t2) -> (Token.toString Token.LPar)
+                             ^ (Token.toString Token.Plus)
+                             ^ (string_of_term t1)
+                             ^ (Token.toString Token.Plus)
+                             ^ (string_of_term t2)
+                             ^ (Token.toString Token.RPar)
+  | Without (t1, t2) -> (Token.toString Token.LPar)
+                             ^ (Token.toString Token.Plus)
+                             ^ (string_of_term t1)
+                             ^ (Token.toString Token.Minus)
+                             ^ (string_of_term t2)
+                             ^ (Token.toString Token.RPar)
+  | Union (t1, t2) -> (Token.toString Token.LPar)
+                             ^ (Token.toString Token.Minus)
+                             ^ (string_of_term t1)
+                             ^ (Token.toString Token.Plus)
+                             ^ (string_of_term t2)
+                             ^ (Token.toString Token.RPar)
+  | Nor (t1, t2) -> (Token.toString Token.LPar)
+                             ^ (Token.toString Token.Minus)
+                             ^ (string_of_term t1)
+                             ^ (Token.toString Token.Minus)
+                             ^ (string_of_term t2)
+                             ^ (Token.toString Token.RPar)
 
 type quantity = Universal | Particular
 type quality = Affirmative | Negative

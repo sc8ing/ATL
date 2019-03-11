@@ -2,7 +2,6 @@ open Lang
 open Token
 
 let rec term (tokens : Token.t list) : Lang.term * Token.t list =
-  let _ = Printf.printf "term: %s\n" (Token.toStrings tokens) in
   match tokens with
   | Term e :: STIndicator :: tokens -> (SingleTerm e, tokens)
   | Term e :: tokens -> (Term e, tokens)
@@ -59,20 +58,15 @@ let rec statement tokens =
   | Minus :: LPar :: tokens ->
     (* statement case *)
     (try
-       let _ = Printf.printf "ambiguous case, trying to make statement from %s\n" (Token.toStrings tokens) in
        let (innerS, tokens) = statement tokens in
        (match tokens with
         | RPar :: [] ->
-          let _ = Printf.printf "successfully made statement from ambiguous case\n" in
           (Neg innerS, tokens) (* no leftover tokens excludes case of combined term *)
         | _ ->
-          let _ = Printf.printf "failed to make statement from ambiguous case, leftOvers = %s\n" (Token.toStrings tokens) in
           failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
      with Failure _ ->
        (* term case *)
-       let _ = Printf.printf "failed to make statement, trying to make term from %s\n" (Token.toStrings tokens) in
        let (sub, tokens) = term (LPar :: tokens) in
-       let _ = Printf.printf "successfully made term as subject, tokens: %s\n" (Token.toStrings tokens) in
        (match tokens with
         | Plus :: tokens ->
           let (pred, tokens) = term tokens in

@@ -2,6 +2,7 @@ open Lang
 open Token
 
 let rec term (tokens : Token.t list) : Lang.term * Token.t list =
+  let _ = Printf.printf "term: %s\n" (Token.toStrings tokens) in
   match tokens with
   | Term e :: STIndicator :: tokens -> (SingleTerm e, tokens)
   | Term e :: tokens -> (Term e, tokens)
@@ -23,7 +24,9 @@ let rec term (tokens : Token.t list) : Lang.term * Token.t list =
       match tokens with
       | RPar :: tokens ->
         (match (typLeft, typRight) with
-         | (Plus, Plus) -> (Intersection (leftTerm, rightTerm), tokens)
+         | (Plus, Plus) ->
+           let _ = Printf.printf "made intersection\n" in
+           (Intersection (leftTerm, rightTerm), tokens)
          | (Plus, Minus) -> (Without (leftTerm, rightTerm), tokens)
          | (Minus, Plus) -> (Union (leftTerm, rightTerm), tokens)
          | (Minus, Minus) -> (Nor (leftTerm, rightTerm), tokens)
@@ -31,6 +34,7 @@ let rec term (tokens : Token.t list) : Lang.term * Token.t list =
       | _ -> failwith ("combined term missing closing " ^ (Token.toString Token.RPar))
     (* then try normal terms *)
     with Failure _ ->
+      let _ = Printf.printf "failed to make ct, tokens: %s\n" (Token.toStrings tokens) in
       let (innerT, tokens) = innerTerm tokens in
       (match tokens with
        | RPar :: tokens -> (innerT, tokens)
@@ -41,7 +45,7 @@ and innerTerm = function
   | Minus :: Term e :: STIndicator :: tokens -> (Neg (SingleTerm e), tokens)
   | Minus :: Term e :: tokens -> (Neg (Term e), tokens)
   | Minus :: LPar :: tokens ->
-    let (innerT, tokens) = innerTerm tokens in
+    let (innerT, tokens) = term tokens in
     (match tokens with
      | RPar :: tokens -> (Neg innerT, tokens)
      | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
@@ -63,12 +67,14 @@ let rec statement tokens =
     (try
        let (innerS, tokens) = statement tokens in
        (match tokens with
-        | RPar :: tokens -> (Neg innerS, tokens)
+        | RPar :: [] -> (Neg innerS, tokens) (* no leftover tokens excludes case of combined term *)
         | _ -> failwith (Printf.sprintf "missing closing '%s'" (Token.toString Token.RPar)))
      with Failure _ ->
      (* term case *)
      try
+       let _ = Printf.printf "failed to make statement\n" in
        let (sub, tokens) = term (LPar :: tokens) in
+       let _ = Printf.printf "statement got subject, tokens: %s\n" (Token.toStrings tokens) in
        (match tokens with
         | Plus :: tokens ->
           let (pred, tokens) = term tokens in

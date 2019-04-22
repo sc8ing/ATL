@@ -1,1 +1,1 @@
-val parse : Token.t list -> Lang.statement
+val parseStatement : Token.t list -> Lang.statement option

@@ -9,10 +9,10 @@ statement ::=
 	| -upperterm-upperterm
 
 upperterm ::=
-	| upperterm indexes
-	| upperterm*
-	| uppercasechar
-	| (innerterm)
+	| uppercasechar indexes
+	| upperterm* indexes
+	| (innerterm) indexes
+	| relationalterm indexes
 
 naturalnumber ::= 1 | 2 | 3 | ... | infinity
 
@@ -33,6 +33,12 @@ compoundterm ::=
 	| +upperterm+upperterm
 	| -upperterm+upperterm
 	| -upperterm-upperterm
+
+relationalterm ::=
+	| uppercasechar indexes
+	| (-uppercasechar) indexes
+	| (relationalterm+upperterm)
+	| (relationalterm-upperterm)
 
 # ATL Semantics
 
